@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Collections;
-using HtmlAgilityPack;
 using System.IO;
+using System.Text.RegularExpressions;
+using HtmlAgilityPack; 
 
 namespace Anki_Decks_Generator
 {
     class Card
     {
         public string sentence;
-        public string full;
+        public string interpretation;
         public string definition;
         public List<string> structure;
         public List<string> register;
@@ -27,39 +25,13 @@ namespace Anki_Decks_Generator
 
     class Oald8Parser
     {
-        //Недоделано::Берет общий для всей статьи регистр, который находится сразу после div#h-g и до любого определения 
-        List<string> getGeneralRegister(HtmlDocument document)
+        string searchPath = "http://oald8.oxfordlearnersdictionaries.com/dictionary/";
+        StreamWriter stream;
+        public Oald8Parser(StreamWriter stream)
         {
-            var ret = new List<string>();
-
-            var register = document.DocumentNode.SelectSingleNode("//div[@class='top-container']");
-            register = register.NextSibling;
-            Console.WriteLine("{0}", register.InnerHtml);
-            register = register.NextSibling;
-            Console.ReadKey();
-            Console.WriteLine("{0}", register.InnerHtml);
-            register = register.NextSibling;
-            Console.ReadKey();
-            Console.WriteLine("{0}", register.InnerHtml);
-            register = register.NextSibling;
-            Console.ReadKey();
-            
-            if (register.InnerText.Contains("(") == false)
-            {
-                return ret;
-            }            
-
-            register = register.NextSibling;
-
-            while (register.InnerText.Contains(")") != true)
-            {
-                ret.Add(register.InnerText);
-                register = register.NextSibling.NextSibling;
-            }
-
-            return ret;
+            this.stream = stream;
         }
-
+    
         string GetName(HtmlNode node)
         {
             return node.Attributes["class"].Value;
@@ -75,21 +47,30 @@ namespace Anki_Decks_Generator
                 if (i + 1 < list.Count) ret += " → ";
             }
 
+            ret = ret.Replace("    ", " ").Replace("  ", " ");
+
             return ret;
         }
 
-        public void GetPage(string path)
+        public void Process(List<string> wordlist)
         {
-            var document = (new HtmlWeb()).Load(path);
+            foreach (string word in wordlist)
+                GetPage(word);
+        }
+
+        void GetPage(string word)
+        {
+            var document = (new HtmlWeb()).Load(searchPath + word);
             var examples = document.DocumentNode.SelectNodes("//span[@class='x-g']");
             if (examples == null) return;
 
             //Init
             HtmlNode definition;
-            var file = new StreamWriter("1.txt");
-
+           
             var usaTranscription = document.DocumentNode.SelectSingleNode("//span[@class='y']").InnerText;
             var gbrTranscription = document.DocumentNode.SelectSingleNode("//span[@class='i']").InnerText;
+            usaTranscription = (new Regex("^ ")).Replace(usaTranscription, "");
+            gbrTranscription = (new Regex("^ ")).Replace(gbrTranscription, "");
                         
             foreach (HtmlNode example in examples)
             {
@@ -126,8 +107,9 @@ namespace Anki_Decks_Generator
                 }
 
                 //An example itself
-                var sentence = example.SelectSingleNode("span[@class='x']");
-                card.sentence = (sentence != null) ? sentence.InnerText : "";
+                var interpretation = example.SelectSingleNode("span[@class='x']");
+                card.interpretation = (interpretation != null) ? interpretation.InnerText : "";
+                card.sentence = (new Regex(" \\(=.*?\\)")).Replace(card.interpretation, "");
 
                 //Definition
                 if (GetName(parentNode) == "id-g")
@@ -170,20 +152,112 @@ namespace Anki_Decks_Generator
                 card.usaTranscription = usaTranscription;
                 card.gbrTranscription = gbrTranscription;
 
-                file.WriteLine("Structure: {1}\nDefinition: {2}\nExample: {0}\nBr: {3}\nAm: {4}\n\n", card.sentence, PrintList(card.structure).Replace("    ", " "), card.definition, card.gbrTranscription, card.usaTranscription);
+                //file.WriteLine("Structure: {1}\nDefinition: {2}\nExample: {0}\nFull: {5}\nBr: {3}\nAm: {4}\n\n", card.sentence, PrintList(card.structure), card.definition, card.gbrTranscription, card.usaTranscription, card.interpretation);
+                stream.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", card.sentence, card.interpretation, PrintList(card.structure), card.definition, card.gbrTranscription, card.usaTranscription, "oald8 " + word);
+                
                 //card.structure = (structure != null) ? generalStructure.InnerText : "";
             }
-            file.Close();
         }
 
+        //Недоделано::Берет общий для всей статьи регистр, который находится сразу после div#h-g и до любого определения 
+        List<string> getGeneralRegister(HtmlDocument document)
+        {
+            var ret = new List<string>();
+
+            var register = document.DocumentNode.SelectSingleNode("//div[@class='top-container']");
+            register = register.NextSibling;
+            Console.WriteLine("{0}", register.InnerHtml);
+            register = register.NextSibling;
+            Console.ReadKey();
+            Console.WriteLine("{0}", register.InnerHtml);
+            register = register.NextSibling;
+            Console.ReadKey();
+            Console.WriteLine("{0}", register.InnerHtml);
+            register = register.NextSibling;
+            Console.ReadKey();
+
+            if (register.InnerText.Contains("(") == false)
+            {
+                return ret;
+            }
+
+            register = register.NextSibling;
+
+            while (register.InnerText.Contains(")") != true)
+            {
+                ret.Add(register.InnerText);
+                register = register.NextSibling.NextSibling;
+            }
+
+            return ret;
+        }
+
+    }
+
+    class Word
+    {
+        public string value;
+        public bool isVisited = false;
     }
     class Program
     {
         static void Main(string[] args)
         {
-            var parser = new Oald8Parser();
-            parser.GetPage("http://oald8.oxfordlearnersdictionaries.com/dictionary/fuck");
-           // Console.ReadKey();
+            var oaldFlag = false;
+            var inputPath = "";
+            var outputPath = "./deck " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt";
+            var wordlist = new List<String>();
+
+            StreamWriter output;
+            StreamReader input;
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                if (args[i] == "-oald8")
+                {
+                    oaldFlag = true;
+                }
+                else if (args[i] == "-p" && i + 1 < args.Length)
+                {
+                    inputPath = args[i+1];
+                    i++;
+                }
+              //  Console.WriteLine("{0}", args[i]);
+
+            }
+
+            if (inputPath == "")
+            {
+                Console.Write("Where's a listname, uh? You should type -p <path_to_you_wordlist>");
+                Console.ReadKey();
+                return;
+            }
+            else
+            {
+                try
+                {
+                    input = new StreamReader(inputPath);
+                    while (input.EndOfStream == false)
+                    {
+                        wordlist.Add(input.ReadLine().Trim());
+                    }
+                }
+                catch(FileNotFoundException e) 
+                {
+                    Console.Write("Wrong path: {0}", inputPath);
+                }
+            }           
+
+            output = new StreamWriter(outputPath);
+
+            if(oaldFlag == true)
+            {
+            var parser = new Oald8Parser(output);
+            parser.Process(wordlist);
+            }
+
+            output.Close();
+            Console.ReadKey();
         }
     }
 }

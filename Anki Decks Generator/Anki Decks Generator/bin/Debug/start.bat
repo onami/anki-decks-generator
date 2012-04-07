@@ -1,1 +1,1 @@
-"Anki Decks Generator.exe"
+"Anki Decks Generator.exe"  -p sample.txt
