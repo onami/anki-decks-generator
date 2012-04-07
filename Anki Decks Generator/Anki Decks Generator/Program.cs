@@ -67,7 +67,7 @@ namespace Anki_Decks_Generator
             if(oaldFlag == true)
             {
             var parser = new Oald8Parser();
-            output = new CardsStream(outputPath);
+            output = new CardsStream(outputPath, 10000000);
             parser.Process(ref output, wordlist, labels, relatedFlag);
             output.Save();
             }

@@ -5,13 +5,14 @@ namespace Anki_Decks_Generator
 {
     class CardsStream
     {
-        int size = 100000000;
+        int size;
         MemoryStream input;
         UTF8Encoding uniEncoding = new UTF8Encoding();
         FileStream output;
 
-        public CardsStream(string outputPath)
+        public CardsStream(string outputPath, int size)
         {
+            this.size = size;
             input = new MemoryStream(size);
             output = new FileStream(outputPath, FileMode.OpenOrCreate, FileAccess.Write);
         }

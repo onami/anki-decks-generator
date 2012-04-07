@@ -38,9 +38,6 @@ namespace Anki_Decks_Generator
             {
                 var document = (new HtmlWeb()).Load(searchPath + word);
 
-                //Парсим исходную страницу
-                GetPage(ref stream, document, word, labels);
-
                 //Получаем список связанных слов, в т.ч. и данное
                 var relatedLinksNodes = document.DocumentNode.SelectNodes("//div[@id='relatedentries']/ul/li/a");
                 if (relatedLinksNodes == null) continue;
@@ -65,7 +62,6 @@ namespace Anki_Decks_Generator
                     }
 
                     updatedWordList.Add(relatedLink, true);
-
                     
                     if ((new Regex("^(" + word + "_\\d+|" + word + ")$")).Match(relatedLink).Success)
                     {
@@ -183,9 +179,9 @@ namespace Anki_Decks_Generator
                 card.usaTranscription = usaTranscription;
                 card.gbrTranscription = gbrTranscription;
 
-                var outputStr = card.sentence + "\t" + card.interpretation + "\t" + word + "\t" + card.gbrTranscription + "\t" + card.usaTranscription + "\t" + PrintList(card.structure) + "\t" + card.definition + "\t" + labels + "\n";
-                stream.Write(outputStr);
-
+                var outStr = card.sentence + "\t" + card.interpretation + "\t" + word + "\t" + card.gbrTranscription + "\t" + card.usaTranscription + "\t" + PrintList(card.structure) + "\t" + card.definition + "\t" + labels + "\n";
+                stream.Write(outStr); 
+                
                 //Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", card.sentence, card.interpretation, PrintList(card.structure), card.definition, card.gbrTranscription, card.usaTranscription, labels);
                 //file.WriteLine("Structure: {1}\nDefinition: {2}\nExample: {0}\nFull: {5}\nBr: {3}\nAm: {4}\n\n", card.sentence, PrintList(card.structure), card.definition, card.gbrTranscription, card.usaTranscription, card.interpretation);
 
