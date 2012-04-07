@@ -40,41 +40,47 @@ namespace Anki_Decks_Generator
 
                 //Парсим исходную страницу
                 GetPage(ref stream, document, word, labels);
-                relatedWordlist.Add(word, true);
-                Console.WriteLine("{0}", word);
+
                 //Получаем список связанных слов, в т.ч. и данное
                 var relatedLinksNodes = document.DocumentNode.SelectNodes("//div[@id='relatedentries']/ul/li/a");
                 if (relatedLinksNodes == null) continue;
 
                 foreach (HtmlNode link in relatedLinksNodes)
                 {
-                    var relatedWord = link.Attributes["href"].Value;
+                    var relatedWord = (new Regex("(\\w+?)#.*")).Replace(link.Attributes["href"].Value, "$1");
                     if (relatedWordlist.ContainsKey(relatedWord) == false)
                     {
                         relatedWordlist.Add(relatedWord, false);
                     }
                 }
 
-                //Получим, начинаем обрабатывать.
-                if (relatedFlag == true)
+                //Получили, начинаем обрабатывать.
+                var updatedWordList = new Hashtable();
+
+                foreach (string relatedLink in relatedWordlist.Keys)
                 {
-                    var updatedWordList = new Hashtable();
-
-                    foreach (string relatedLink in relatedWordlist.Keys)
+                    if ((bool)relatedWordlist[relatedLink] == true)
                     {
-                        if ((bool)relatedWordlist[relatedLink] == true)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        updatedWordList.Add(relatedLink, true);
+                    updatedWordList.Add(relatedLink, true);
+
+                    
+                    if ((new Regex("^(" + word + "_\\d+|" + word + ")$")).Match(relatedLink).Success)
+                    {
                         Console.WriteLine("{0}", relatedLink);
                         GetPage(ref stream, (new HtmlWeb()).Load(searchPath + relatedLink), relatedLink, labels);
                     }
-                    foreach (DictionaryEntry update in updatedWordList)
+                    else if(relatedFlag == true)
                     {
-                        relatedWordlist[update.Key] = update.Value;
-                    }
+                        Console.WriteLine("    {0}", relatedLink);
+                        GetPage(ref stream, (new HtmlWeb()).Load(searchPath + relatedLink), relatedLink, labels);
+                    }                    
+                }
+                foreach (DictionaryEntry update in updatedWordList)
+                {
+                    relatedWordlist[update.Key] = update.Value;
                 }
             }
         }
@@ -85,7 +91,8 @@ namespace Anki_Decks_Generator
             if (examples == null) return;
 
             //Init
-            labels = (labels == "") ? word + " oald8" : word + " oald8" + " " + labels;
+            word = (new Regex("(\\w+?)_.*")).Replace(word, "$1");
+            labels = (labels == "") ? "oald8 " + word : "oald8 " + word + " " + labels;
 
             HtmlNode definition;
 
@@ -176,8 +183,8 @@ namespace Anki_Decks_Generator
                 card.usaTranscription = usaTranscription;
                 card.gbrTranscription = gbrTranscription;
 
-                var outputStr = card.sentence + "\t" + card.interpretation + "\t" + PrintList(card.structure) + "\t" + card.definition + "\t" + card.gbrTranscription + "\t" + card.usaTranscription + "\t" + labels + "\n";
-                stream.WriteIn(outputStr);
+                var outputStr = card.sentence + "\t" + card.interpretation + "\t" + word + "\t" + card.gbrTranscription + "\t" + card.usaTranscription + "\t" + PrintList(card.structure) + "\t" + card.definition + "\t" + labels + "\n";
+                stream.Write(outputStr);
 
                 //Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}", card.sentence, card.interpretation, PrintList(card.structure), card.definition, card.gbrTranscription, card.usaTranscription, labels);
                 //file.WriteLine("Structure: {1}\nDefinition: {2}\nExample: {0}\nFull: {5}\nBr: {3}\nAm: {4}\n\n", card.sentence, PrintList(card.structure), card.definition, card.gbrTranscription, card.usaTranscription, card.interpretation);

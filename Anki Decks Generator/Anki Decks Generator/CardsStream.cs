@@ -16,7 +16,7 @@ namespace Anki_Decks_Generator
             output = new FileStream(outputPath, FileMode.OpenOrCreate, FileAccess.Write);
         }
 
-        public void WriteIn(string str)
+        public void Write(string str)
         {
             byte[] outputBytes = uniEncoding.GetBytes(str);
             if (input.Position + outputBytes.Length > size)
