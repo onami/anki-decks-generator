@@ -1,1 +1,0 @@
-deckgen  -p sample.txt -oald8 -l efl

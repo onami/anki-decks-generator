@@ -1,1 +1,0 @@
-"Anki Decks Generator.exe"  -p sample.txt
