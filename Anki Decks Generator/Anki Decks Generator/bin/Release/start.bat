@@ -1,0 +1,1 @@
+"Anki Decks Generator.exe"  -oald8 -p sample.txt 
