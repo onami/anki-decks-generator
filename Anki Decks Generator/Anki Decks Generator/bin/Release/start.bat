@@ -1,1 +1,1 @@
-"Anki Decks Generator.exe"  -oald8 -p sample.txt 
+deckgen  -p test.txt -oald8 -related
