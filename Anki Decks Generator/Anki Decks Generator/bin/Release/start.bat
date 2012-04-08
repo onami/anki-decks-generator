@@ -1,1 +1,1 @@
-deckgen  -p test.txt -oald8 -l gsl
+deckgen  -p test.txt -oald8
