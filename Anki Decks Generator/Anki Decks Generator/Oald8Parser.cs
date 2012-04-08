@@ -69,17 +69,18 @@ namespace Anki_Decks_Generator
                         continue;
                     }
 
-                    updatedWordList.Add(relatedLink, true);
                     //Console.WriteLine("T: {0}, ", relatedLink);
                     if ((new Regex("^(" + word.Replace(' ', '-') + "_\\d+|" + word.Replace(' ', '-') + ")$")).Match(relatedLink).Success)
                     {
                         Console.WriteLine("{0}", relatedLink);
                         GetPage(ref stream, (new HtmlWeb()).Load(searchPath + relatedLink), relatedLink, labels);
+                        updatedWordList.Add(relatedLink, true);
                     }
                     else if(relatedFlag == true)
                     {
                         Console.WriteLine("    {0}", relatedLink);
                         GetPage(ref stream, (new HtmlWeb()).Load(searchPath + relatedLink), relatedLink, labels);
+                        updatedWordList.Add(relatedLink, true);
                     }                    
                 }
                 foreach (DictionaryEntry update in updatedWordList)
