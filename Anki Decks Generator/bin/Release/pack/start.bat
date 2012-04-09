@@ -1,0 +1,1 @@
+deckgen  -p "./lists/compilation.txt" -oald8 -related

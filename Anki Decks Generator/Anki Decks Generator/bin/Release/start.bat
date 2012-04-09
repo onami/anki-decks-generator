@@ -1,1 +1,0 @@
-deckgen  -p test.txt -oald8
