@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Text;
 
-namespace Anki_Decks_Generator
+namespace deckgen
 {
-    class CardsStream
+    public class CardsStream
     {
         int size;
         MemoryStream input;
@@ -45,7 +45,5 @@ namespace Anki_Decks_Generator
             input.Close();
             output.Close();
         }
-
-
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Anki_Decks_Generator
+namespace deckgen
 {
-    class Card
+    public class Card
     {
         public string sentence;
         public string interpretation;

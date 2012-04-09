@@ -1,1 +1,2 @@
-deckgen  -p test.txt -oald8
+deckgen  -p "./lists/modal_verbs.txt" -oald8
+pause

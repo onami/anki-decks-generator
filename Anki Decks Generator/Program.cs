@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Anki_Decks_Generator
+namespace deckgen
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             var oaldFlag = false;
             var inputPath = "";
@@ -54,11 +54,15 @@ namespace Anki_Decks_Generator
                     input = new StreamReader(inputPath);
                     while (input.EndOfStream == false)
                     {
-                        wordlist.Add(input.ReadLine().Trim());
+                        var newWord = input.ReadLine().Trim();
+                        if (wordlist.Contains(newWord) == false)
+                        {
+                            wordlist.Add(newWord);
+                        }
                     }
                     input.Close();
                 }
-                catch(FileNotFoundException e) 
+                catch (FileNotFoundException e)
                 {
                     Console.Write("Wrong path: {0}", inputPath);
                 }
@@ -70,14 +74,14 @@ namespace Anki_Decks_Generator
             
             if(oaldFlag == true)
             {
-            var parser = new Oald8Parser();
-            output = new CardsStream(outputPath, 100000);
-            parser.Process(ref output, wordlist, labels, relatedFlag);
-            output.Save();
-            Console.WriteLine("\nCount: {0}", parser.count);
+                var parser = new Oald8();
+                output = new CardsStream(outputPath, 100000);
+                parser.ProcessWordlist(ref output, wordlist, labels, relatedFlag);
+                output.Save();
+                Console.WriteLine("\nCount: {0}", parser.count);
             }
 
-            Console.ReadKey();
+           //Console.ReadKey();
         }
     }
 }
