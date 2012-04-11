@@ -1,3 +1,6 @@
+be
+do
+have
 can
 cannot
 could

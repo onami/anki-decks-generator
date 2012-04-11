@@ -42,14 +42,22 @@ namespace deckgen
         void ParsePage(ref CardsStream stream, HtmlDocument document, string word, string labels)
         {
             var examples = document.DocumentNode.SelectNodes("//span[@class='x-g']");
-            if (examples == null) return;
+            var link = word;
+
+            if (examples == null)
+            {
+                reportStream.Write("Failure. Examples was not found. Link: " + link + ".\n");
+                return;
+            }
 
             //Init
+
             word = (new Regex("(.+?)_.*")).Replace(word, "$1");
             labels = (labels == "") ? "oald8 " + word : "oald8 " + word + " " + labels;
 
             HtmlNode definition;
 
+            //Transcription
             var usaTranscriptionNode = document.DocumentNode.SelectSingleNode("//span[@class='y']");
             var usaTranscription = (usaTranscriptionNode != null) ? usaTranscriptionNode.InnerText : "";
             var gbrTranscriptionNode = document.DocumentNode.SelectSingleNode("//span[@class='i']");
@@ -62,7 +70,7 @@ namespace deckgen
                 var card = new Card();
                 var parentNode = example.ParentNode;
 
-                //A structure
+                //Getting a structure
                 var structure1 = example.SelectSingleNode("span[@class='cf']");
                 if (GetName(parentNode) == "pv-g")
                 {
@@ -97,13 +105,8 @@ namespace deckgen
                     if (structure1 != null) card.structure.Add(structure1.InnerText);
                 }
 
-                //An example itself
-                var interpretation = example.SelectSingleNode("span[@class='x']");
-                card.interpretation = (interpretation != null) ? interpretation.InnerText : "";
-                card.sentence = (new Regex(" \\(=.*?\\)")).Replace(card.interpretation, "");
-
-                //Definition
-                if (GetName(parentNode) == "id-g")
+                //Getting a definition
+                if (GetName(parentNode) == "id-g" || GetName(parentNode) == "h-g")
                 {
                     var temp = parentNode.SelectSingleNode("div[@class='def_block']");
 
@@ -137,14 +140,29 @@ namespace deckgen
                     }
                 }
 
+                //Запись на карточку остальных данных
+                //An example itself
+                var interpretation = example.SelectSingleNode("span[@class='x']");
+                card.interpretation = (interpretation != null) ? interpretation.InnerText : "";
+                card.sentence = (new Regex(" \\(=.*?\\)")).Replace(card.interpretation, "");
+
                 card.definition = (definition != null) ? definition.InnerText : "";
                 card.definition = card.definition.Replace("    ", " ");
 
                 card.usaTranscription = usaTranscription;
                 card.gbrTranscription = gbrTranscription;
 
-                var titleNode = document.DocumentNode.SelectSingleNode("//h2[@class='h']");
-                var title = (titleNode != null) ? titleNode.InnerText : "";
+                var title_ = document.DocumentNode.SelectSingleNode("//h2[@class='h']");
+                var title = (title_ != null) ? title_.InnerText : "";
+
+                if (card.interpretation == card.sentence)
+                {
+                    card.interpretation = "";
+                }
+                if (card.definition == "")
+                {
+                    reportStream.Write("Failure. Definition was not found. Link: " + link + ". Example: '" + card.sentence + "'.\n");
+                }
 
                 title = title.Trim();
                 card.sentence = card.sentence.Trim();

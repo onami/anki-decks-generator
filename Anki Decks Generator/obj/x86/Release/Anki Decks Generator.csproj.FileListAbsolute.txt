@@ -22,3 +22,11 @@ D:\code\deckgen\Anki Decks Generator\bin\Release\HtmlAgilityPack.xml
 D:\code\deckgen\Anki Decks Generator\obj\x86\Release\ResolveAssemblyReference.cache
 D:\code\deckgen\Anki Decks Generator\obj\x86\Release\deckgen.exe
 D:\code\deckgen\Anki Decks Generator\obj\x86\Release\deckgen.pdb
+E:\projects\deckgen\Anki Decks Generator\bin\Release\deckgen.exe
+E:\projects\deckgen\Anki Decks Generator\bin\Release\deckgen.pdb
+E:\projects\deckgen\Anki Decks Generator\bin\Release\HtmlAgilityPack.dll
+E:\projects\deckgen\Anki Decks Generator\bin\Release\HtmlAgilityPack.pdb
+E:\projects\deckgen\Anki Decks Generator\bin\Release\HtmlAgilityPack.xml
+E:\projects\deckgen\Anki Decks Generator\obj\x86\Release\ResolveAssemblyReference.cache
+E:\projects\deckgen\Anki Decks Generator\obj\x86\Release\deckgen.exe
+E:\projects\deckgen\Anki Decks Generator\obj\x86\Release\deckgen.pdb

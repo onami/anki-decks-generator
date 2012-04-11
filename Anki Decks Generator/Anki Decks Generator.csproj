@@ -67,9 +67,8 @@
     <Compile Include="Card.cs" />
     <Compile Include="CardsStream.cs" />
     <Compile Include="Oald8.Aux.cs" />
-    <Compile Include="Oald8.Downloading.cs" />
     <Compile Include="Oald8.Parsing.cs" />
-    <Compile Include="Oald8.Processing.cs" />
+    <Compile Include="Oald8.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

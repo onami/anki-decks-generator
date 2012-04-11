@@ -12,6 +12,7 @@ namespace deckgen
         public int count;
         Hashtable pages;
         string searchPath = "http://oald8.oxfordlearnersdictionaries.com/dictionary/";
+        CardsStream reportStream = new CardsStream("./report " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
         public Oald8()
         {
@@ -19,87 +20,86 @@ namespace deckgen
             pages = new Hashtable();
         }
 
+        string getCleanUrl(HtmlNode link_)
+        {
+            return (new Regex("(.+?)#.*")).Replace(link_.Attributes["href"].Value, "$1");
+        }
+
         public void ProcessWordlist(ref CardsStream stream, List<string> wordlist, string labels, bool crossreferenceFlag)
         {
             //Разбираем исходные страницы. Возможно, удастся ускорить работу засчёт распараллеливания.
-            downloadPages(ref stream, wordlist, labels);
             //Собираем ссылки в теле статьи и добавляем в список.
             //downloadPages(ref stream, GetArticleCrossrefenceLinkList(), labels);
 
             //Работаем с ссылками, находящиеся в блоке Search Results, в т.ч. и на само word)
-            var searchCrossreferenceUrlList = new Hashtable();
-            var firstLinkLists = new List<String>();
+            var crossreferenceLinks = new Hashtable();
+            string currentPageLink;
 
-            foreach(String word in pages.Keys)
+            foreach(String word_ in wordlist)
             {
-                var page = (HtmlDocument) pages[word];
-  
-                var updatedWordList = new Hashtable();
-                                
-                var currentLink = page.DocumentNode.SelectSingleNode("//li[@class='currentpage']/a");
-                if (currentLink != null)
-                {
-                    var url = getCleanUrl(currentLink);
-                    if (firstLinkLists.Contains(url) == false)
-                    {
-                        firstLinkLists.Add(url);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Bug");
-                    }
-                }
+                var word = (new Regex("[^- 0-9a-zA-Z']+")).Replace(word_, "");
+                var page = (new HtmlWeb()).Load(searchPath + word);
+                
+                //Определяем, на какой по какой ссылке находится наше слово
+                var currentPageLink_ = page.DocumentNode.SelectSingleNode("//li[@class='currentpage']/a");
+                currentPageLink = (currentPageLink_ != null) ? getCleanUrl(currentPageLink_) : "";
 
+                //Берём все слова из блока search results
                 var linksNodes = page.DocumentNode.SelectNodes("//div[@id='relatedentries']/ul/li/a");
                 if (linksNodes != null)
                 {
                     foreach (HtmlNode link in linksNodes)
                     {
                         var url = getCleanUrl(link);
-                        if (searchCrossreferenceUrlList.ContainsKey(url) == false)
+                        if (crossreferenceLinks.ContainsKey(url) == false)
                         {
-                            searchCrossreferenceUrlList.Add(url, false);
+                            crossreferenceLinks.Add(url, false);
                         }
                     }
                 }
+                else
+                {
+                    reportStream.Write("Failure. Page not found. Link: " + word_ + ".\n");
+                }
 
                 //Всё нужное получили, начинаем обрабатывать searchCrossreferenceLinkList
-                foreach (string url in searchCrossreferenceUrlList.Keys)
+                var updatedWordList = new Hashtable();
+                foreach (string link in crossreferenceLinks.Keys)
                 {
-                    if ((bool)searchCrossreferenceUrlList[url] == true)
+                    if ((bool)crossreferenceLinks[link] == true)
                     {
                         continue;
                     }
 
-                    //Console.WriteLine("T: {0}, ", relatedLink);
                     var tranformedWord = (new Regex("^(" + word.Replace(' ', '-') + "_\\d+)$", RegexOptions.IgnoreCase));
-
+                    
                     //Первую страницу мы уже скачали.
-                    if (firstLinkLists.Contains(url))
+                    if (currentPageLink == link)
                     {
-                        Console.WriteLine("{0}", url);
                         ParsePage(ref stream, page, word, labels);
-                        updatedWordList.Add(url, true);
                     }
-                    else if (tranformedWord.Match(url).Success)
+                    else if (tranformedWord.Match(link).Success)
                     {
-                        Console.WriteLine("{0}", url);
-                        ParsePage(ref stream, (new HtmlWeb()).Load(searchPath + url), url, labels);
-                        updatedWordList.Add(url, true);
+                        ParsePage(ref stream, (new HtmlWeb()).Load(searchPath + link), link, labels);
                     }
                     else if (crossreferenceFlag == true)
                     {
-                        Console.WriteLine("    {0}", url);
-                        ParsePage(ref stream, (new HtmlWeb()).Load(searchPath + url), url, labels);
-                        updatedWordList.Add(url, true);
-                    }                    
+                        ParsePage(ref stream, (new HtmlWeb()).Load(searchPath + link), link, labels);
+                    }
+                    if (currentPageLink == link || tranformedWord.Match(link).Success || crossreferenceFlag == true)
+                    {
+                        Console.WriteLine("{0}", link);
+                        updatedWordList.Add(link, true);
+                        reportStream.Write("Success. Page was parsed. Link: " + link + ".\n");
+                    }
                 }
 
                 foreach (DictionaryEntry update in updatedWordList)
                 {
-                    searchCrossreferenceUrlList[update.Key] = update.Value;
+                    crossreferenceLinks[update.Key] = update.Value;
                 }
             }
+            reportStream.Save();
         } 
     }
 }
