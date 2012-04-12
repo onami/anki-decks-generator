@@ -99,6 +99,7 @@ namespace deckgen
                     crossreferenceLinks[update.Key] = update.Value;
                 }
             }
+            reportStream.Write("Total: " + count + "\n");
             reportStream.Save();
         } 
     }
