@@ -6,15 +6,15 @@ using HtmlAgilityPack;
 
 namespace deckgen
 {
-    public partial class Oald8
+    public partial class Macmillan
     {
         //Сделать только геттер
         public int count;
         Hashtable pages;
-        string searchPath = "http://oald8.oxfordlearnersdictionaries.com/dictionary/";
+        string searchPath = "http://www.macmillandictionary.com/dictionary/british/";
         CardsStream reportStream = new CardsStream("./report " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
-        public Oald8()
+        public Macmillan()
         {
             count = 0;
             pages = new Hashtable();
@@ -22,7 +22,7 @@ namespace deckgen
 
         string getCleanUrl(HtmlNode link_)
         {
-            return (new Regex("(.+?)#.*")).Replace(link_.Attributes["href"].Value, "$1");
+            return (new Regex("(.*/)?(.+?)(#.*)?")).Replace(link_.Attributes["href"].Value, "$2");
         }
 
         public void ProcessWordlist(ref CardsStream stream, List<string> wordlist, string labels, bool crossreferenceFlag)
@@ -33,19 +33,18 @@ namespace deckgen
 
             //Работаем с ссылками, находящиеся в блоке Search Results, в т.ч. и на само word)
             var crossreferenceLinks = new Hashtable();
-            string currentPageLink;
 
-            foreach(String word_ in wordlist)
+            foreach (String word_ in wordlist)
             {
-                var word = (new Regex("[^- 0-9a-zA-Z']+")).Replace(word_, "");
+                var word = (new Regex("[^- 0-9a-zA-Z']+")).Replace(word_, "").Replace(" ", "-");
                 var page = (new HtmlWeb()).Load(searchPath + word);
-                
-                //Определяем, на какой по какой ссылке находится наше слово
-                var currentPageLink_ = page.DocumentNode.SelectSingleNode("//li[@class='currentpage']/a");
-                currentPageLink = (currentPageLink_ != null) ? getCleanUrl(currentPageLink_) : "";
+
+                ParsePage(ref stream, page, word, labels);
+                Console.WriteLine("{0}", word);
+                reportStream.Write("Success. Page was parsed. Link: " + word + ".\n");
 
                 //Берём все слова из блока search results
-                var linksNodes = page.DocumentNode.SelectNodes("//div[@id='relatedentries']/ul/li/a");
+                var linksNodes = page.DocumentNode.SelectNodes("//div[@class='entrylist']/ul/li/a");
                 if (linksNodes != null)
                 {
                     foreach (HtmlNode link in linksNodes)
@@ -57,13 +56,10 @@ namespace deckgen
                         }
                     }
                 }
-                else
-                {
-                    reportStream.Write("Failure. Page not found. Link: " + word_ + ".\n");
-                }
 
-                //Всё нужное получили, начинаем обрабатывать searchCrossreferenceLinkList
+
                 var updatedWordList = new Hashtable();
+
                 foreach (string link in crossreferenceLinks.Keys)
                 {
                     if ((bool)crossreferenceLinks[link] == true)
@@ -72,22 +68,11 @@ namespace deckgen
                     }
 
                     var tranformedWordRegExp = new Regex("^(" + word.Replace(' ', '-') + "_\\d+)$", RegexOptions.IgnoreCase);
-                    
-                    //Первую страницу мы уже скачали.
-                    if (currentPageLink == link)
-                    {
-                        ParsePage(ref stream, page, word, labels);
-                    }
-                    else if (tranformedWordRegExp.Match(link).Success)
+
+                    if (crossreferenceFlag == true || tranformedWordRegExp.Match(link).Success)
                     {
                         ParsePage(ref stream, (new HtmlWeb()).Load(searchPath + link), link, labels);
-                    }
-                    else if (crossreferenceFlag == true)
-                    {
-                        ParsePage(ref stream, (new HtmlWeb()).Load(searchPath + link), link, labels);
-                    }
-                    if (currentPageLink == link || tranformedWordRegExp.Match(link).Success || crossreferenceFlag == true)
-                    {
+
                         Console.WriteLine("{0}", link);
                         updatedWordList.Add(link, true);
                         reportStream.Write("Success. Page was parsed. Link: " + link + ".\n");
@@ -101,6 +86,6 @@ namespace deckgen
             }
             reportStream.Write("Total: " + count + "\n");
             reportStream.Save();
-        } 
+        }
     }
 }

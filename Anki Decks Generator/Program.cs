@@ -9,6 +9,7 @@ namespace deckgen
         public static void Main(string[] args)
         {
             var oaldFlag = false;
+            var macmillanFlag = false;
             var inputPath = "";
             var outputPath = "./deck " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt";
             var wordlist = new List<String>();
@@ -24,9 +25,13 @@ namespace deckgen
                 {
                     oaldFlag = true;
                 }
+                else if (args[i] == "-macmillan")
+                {
+                    macmillanFlag = true;
+                }
                 else if (args[i] == "-l" && i + 1 < args.Length)
                 {
-                    labels = (args[i+1]).Trim();
+                    labels = (args[i + 1]).Trim();
                     i++;
                 }
 
@@ -43,7 +48,7 @@ namespace deckgen
 
             if (inputPath == "")
             {
-                Console.Write("Where's a listname, uh? You should type -p <path_to_you_wordlist>");
+                Console.Write("Where's a listname, uh? You should enter -p <path_to_you_wordlist>");
                 Console.ReadKey();
                 return;
             }
@@ -71,16 +76,26 @@ namespace deckgen
                     Console.Write("Wrong directory: {0}", inputPath);
                 }
             }
-            
+
+            output = new CardsStream(outputPath, 100000);
+
             if(oaldFlag == true)
             {
                 var parser = new Oald8();
-                output = new CardsStream(outputPath, 100000);
                 parser.ProcessWordlist(ref output, wordlist, labels, relatedFlag);
-                output.Save();
+                Console.WriteLine("\nCount: {0}", parser.count);
+            }
+            if (macmillanFlag == true)
+            {
+                var parser = new Macmillan();
+                parser.ProcessWordlist(ref output, wordlist, labels, relatedFlag);
                 Console.WriteLine("\nCount: {0}", parser.count);
             }
 
+            if (oaldFlag == true || macmillanFlag == true)
+            {
+                output.Save();
+            }
            //Console.ReadKey();
         }
     }

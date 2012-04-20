@@ -11,7 +11,7 @@ namespace deckgen
         public List<string> register;
         public string usaTranscription;
         public string gbrTranscription;
-
+        public string simpleStructure;
         public Card()
         {
             register = new List<string>();

@@ -37,7 +37,6 @@ namespace deckgen
             {
                 output.Write(buf, 0, input.Read(buf, 0, 10000));
             }
-
         }
 
         ~CardsStream()

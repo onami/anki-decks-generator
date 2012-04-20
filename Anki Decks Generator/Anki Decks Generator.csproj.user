@@ -4,7 +4,7 @@
     <StartArguments>-p test.txt -l "test"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartArguments>-p test.txt -oald8</StartArguments>
+    <StartArguments>-p test.txt -macmillan -related</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>

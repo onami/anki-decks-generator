@@ -8,37 +8,6 @@ namespace deckgen
 {
     partial class Oald8
     {
-        List<string> GetArticleCrossrefenceLinkList()
-        {
-            var articleCrossreferenceWordList = new List<string>();
-
-            foreach (String word in pages.Keys)
-            {
-                var page = (HtmlDocument)pages[word];
-
-                var links1 = page.DocumentNode.SelectNodes("//span[@class='xh']");
-                var links2 = page.DocumentNode.SelectNodes("//a[@class='Ref']");
- 
-                if (links1 == null && links2 == null) continue;
-
-                if (links2 != null)
-                {
-
-                }
-
-                foreach (var link in links2)
-                {
-                    if (articleCrossreferenceWordList.Contains(link.InnerText) == false)
-                    {
-                        Console.WriteLine("Word: {0} Reference: {1}", word, link.InnerText);
-                        articleCrossreferenceWordList.Add(link.InnerText);
-                    }
-                }
-            }
-
-            return articleCrossreferenceWordList;
-        }
-
         void ParsePage(ref CardsStream stream, HtmlDocument document, string word, string labels)
         {
             var examples = document.DocumentNode.SelectNodes("//span[@class='x-g']");
@@ -50,11 +19,6 @@ namespace deckgen
                 return;
             }
 
-            //Init
-
-            word = (new Regex("(.+?)_.*")).Replace(word, "$1");
-            labels = (labels == "") ? "oald8 " + word : "oald8 " + word + " " + labels;
-
             HtmlNode definition;
 
             //Transcription
@@ -62,8 +26,12 @@ namespace deckgen
             var usaTranscription = (usaTranscriptionNode != null) ? usaTranscriptionNode.InnerText : "";
             var gbrTranscriptionNode = document.DocumentNode.SelectSingleNode("//span[@class='i']");
             var gbrTranscription = (gbrTranscriptionNode != null) ? gbrTranscriptionNode.InnerText : "";
-            usaTranscription = (new Regex("^ ")).Replace(usaTranscription, "");
-            gbrTranscription = (new Regex("^ ")).Replace(gbrTranscription, "");
+
+            var title_ = document.DocumentNode.SelectSingleNode("//h2[@class='h']");
+            var title = (title_ != null) ? title_.InnerText : "";
+
+            var wordLabel = title.Replace(' ', '-');
+            labels = (labels == "") ? "oald8 " + wordLabel : "oald8 " + wordLabel + " " + labels;
 
             foreach (HtmlNode example in examples)
             {
@@ -140,7 +108,6 @@ namespace deckgen
                     }
                 }
 
-                //Запись на карточку остальных данных
                 //An example itself
                 var interpretation = example.SelectSingleNode("span[@class='x']");
                 card.interpretation = (interpretation != null) ? interpretation.InnerText : "";
@@ -151,10 +118,7 @@ namespace deckgen
 
                 card.usaTranscription = usaTranscription;
                 card.gbrTranscription = gbrTranscription;
-
-                var title_ = document.DocumentNode.SelectSingleNode("//h2[@class='h']");
-                var title = (title_ != null) ? title_.InnerText : "";
-
+                
                 if (card.interpretation == card.sentence)
                 {
                     card.interpretation = "";
@@ -163,7 +127,12 @@ namespace deckgen
                 {
                     reportStream.Write("Failure. Definition was not found. Link: " + link + ". Example: '" + card.sentence + "'.\n");
                 }
+                if (card.sentence == "")
+                {
+                    reportStream.Write("Failure. Example was not found. Link: " + link + ".\n");
+                }
 
+                //"Trimming"
                 title = title.Trim();
                 card.sentence = card.sentence.Trim();
                 card.interpretation = card.interpretation.Trim();
@@ -177,37 +146,35 @@ namespace deckgen
             }
         }
 
-        //Недоделано::Берет общий для всей статьи регистр, который находится сразу после div#h-g и до любого определения 
-        List<string> getGeneralRegister(HtmlDocument document)
+        List<string> GetArticleCrossrefenceLinkList()
         {
-            var ret = new List<string>();
+            var articleCrossreferenceWordList = new List<string>();
 
-            var register = document.DocumentNode.SelectSingleNode("//div[@class='top-container']");
-            register = register.NextSibling;
-            Console.WriteLine("{0}", register.InnerHtml);
-            register = register.NextSibling;
-            Console.ReadKey();
-            Console.WriteLine("{0}", register.InnerHtml);
-            register = register.NextSibling;
-            Console.ReadKey();
-            Console.WriteLine("{0}", register.InnerHtml);
-            register = register.NextSibling;
-            Console.ReadKey();
-
-            if (register.InnerText.Contains("(") == false)
+            foreach (String word in pages.Keys)
             {
-                return ret;
+                var page = (HtmlDocument)pages[word];
+
+                var links1 = page.DocumentNode.SelectNodes("//span[@class='xh']");
+                var links2 = page.DocumentNode.SelectNodes("//a[@class='Ref']");
+
+                if (links1 == null && links2 == null) continue;
+
+                if (links2 != null)
+                {
+
+                }
+
+                foreach (var link in links2)
+                {
+                    if (articleCrossreferenceWordList.Contains(link.InnerText) == false)
+                    {
+                        Console.WriteLine("Word: {0} Reference: {1}", word, link.InnerText);
+                        articleCrossreferenceWordList.Add(link.InnerText);
+                    }
+                }
             }
 
-            register = register.NextSibling;
-
-            while (register.InnerText.Contains(")") != true)
-            {
-                ret.Add(register.InnerText);
-                register = register.NextSibling.NextSibling;
-            }
-
-            return ret;
+            return articleCrossreferenceWordList;
         }
     }
 }

@@ -8,12 +8,12 @@ namespace deckgen
 {
     public partial class Oald8
     {
-        string GetName(HtmlNode node)
+        public string GetName(HtmlNode node)
         {
             return node.Attributes["class"].Value;
         }
 
-        string PrintList(List<string> list)
+        public string PrintList(List<string> list)
         {
             string ret = "";
 
