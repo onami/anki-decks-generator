@@ -1,17 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace deckgen
 {
     public class Program
     {
+        [FlagsAttribute]
+        enum ParserMask
+        {
+            None = 0,
+            Oald8 = 1,
+            Macmillan = 2
+        }
+
         public static void Main(string[] args)
         {
-            var oaldFlag = false;
-            var macmillanFlag = false;
+            ParserMask useParser = ParserMask.None;
             var inputPath = "";
-            var outputPath = "./deck " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt";
+            var outputPath = DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt";
             var wordlist = new List<String>();
             var labels = "";
             var relatedFlag = false;
@@ -23,18 +31,17 @@ namespace deckgen
             {
                 if (args[i] == "-oald8")
                 {
-                    oaldFlag = true;
+                    useParser |= ParserMask.Oald8;
                 }
                 else if (args[i] == "-macmillan")
                 {
-                    macmillanFlag = true;
+                    useParser |= ParserMask.Macmillan;
                 }
                 else if (args[i] == "-l" && i + 1 < args.Length)
                 {
                     labels = (args[i + 1]).Trim();
                     i++;
                 }
-
                 else if (args[i] == "-p" && i + 1 < args.Length)
                 {
                     inputPath = (args[i + 1]).Trim();
@@ -59,10 +66,10 @@ namespace deckgen
                     input = new StreamReader(inputPath);
                     while (input.EndOfStream == false)
                     {
-                        var newWord = input.ReadLine().Trim();
-                        if (wordlist.Contains(newWord) == false)
+                        var word = (new Regex("[^- 0-9a-zA-Z']+")).Replace(input.ReadLine(), "").Trim();
+                        if (wordlist.Contains(word) == false)
                         {
-                            wordlist.Add(newWord);
+                            wordlist.Add(word);
                         }
                     }
                     input.Close();
@@ -77,22 +84,31 @@ namespace deckgen
                 }
             }
 
+            if (labels.Length != 0)
+            {
+                outputPath = "./" + labels + " " + outputPath;
+            }
+            else
+            {
+                outputPath = "./deck " + outputPath;
+            }
+
             output = new CardsStream(outputPath, 100000);
 
-            if(oaldFlag == true)
+            if ((useParser & ParserMask.Oald8) != ParserMask.None)
             {
                 var parser = new Oald8();
                 parser.ProcessWordlist(ref output, wordlist, labels, relatedFlag);
-                Console.WriteLine("\nCount: {0}", parser.count);
+                Console.WriteLine("\nCount: {0}\n", parser.count);
             }
-            if (macmillanFlag == true)
+            if ((useParser & ParserMask.Macmillan) != ParserMask.None)
             {
                 var parser = new Macmillan();
                 parser.ProcessWordlist(ref output, wordlist, labels, relatedFlag);
-                Console.WriteLine("\nCount: {0}", parser.count);
+                Console.WriteLine("\nCount: {0}\n", parser.count);
             }
 
-            if (oaldFlag == true || macmillanFlag == true)
+            if (useParser != ParserMask.None)
             {
                 output.Save();
             }

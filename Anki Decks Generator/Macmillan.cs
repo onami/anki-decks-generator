@@ -12,7 +12,7 @@ namespace deckgen
         public int count;
         Hashtable pages;
         string searchPath = "http://www.macmillandictionary.com/dictionary/british/";
-        CardsStream reportStream = new CardsStream("./report " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
+        CardsStream reportStream = new CardsStream("./report macmillan" + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
         public Macmillan()
         {
@@ -34,9 +34,8 @@ namespace deckgen
             //Работаем с ссылками, находящиеся в блоке Search Results, в т.ч. и на само word)
             var crossreferenceLinks = new Hashtable();
 
-            foreach (String word_ in wordlist)
+            foreach (String word in wordlist)
             {
-                var word = (new Regex("[^- 0-9a-zA-Z']+")).Replace(word_, "").Replace(" ", "-");
                 var page = (new HtmlWeb()).Load(searchPath + word);
 
                 ParsePage(ref stream, page, word, labels);

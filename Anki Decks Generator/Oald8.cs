@@ -9,20 +9,14 @@ namespace deckgen
     public partial class Oald8
     {
         //Сделать только геттер
-        public int count;
-        Hashtable pages;
+        public int count = 0;
+        Hashtable pages = new Hashtable();
         string searchPath = "http://oald8.oxfordlearnersdictionaries.com/dictionary/";
-        CardsStream reportStream = new CardsStream("./report " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
+        CardsStream reportStream = new CardsStream("./report oald8 " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
-        public Oald8()
+        string getCleanUrl(HtmlNode link)
         {
-            count = 0;
-            pages = new Hashtable();
-        }
-
-        string getCleanUrl(HtmlNode link_)
-        {
-            return (new Regex("(.+?)#.*")).Replace(link_.Attributes["href"].Value, "$1");
+            return (new Regex("(.+?)#.*")).Replace(link.Attributes["href"].Value, "$1");
         }
 
         public void ProcessWordlist(ref CardsStream stream, List<string> wordlist, string labels, bool crossreferenceFlag)
@@ -35,9 +29,8 @@ namespace deckgen
             var crossreferenceLinks = new Hashtable();
             string currentPageLink;
 
-            foreach(String word_ in wordlist)
+            foreach(String word in wordlist)
             {
-                var word = (new Regex("[^- 0-9a-zA-Z']+")).Replace(word_, "");
                 var page = (new HtmlWeb()).Load(searchPath + word);
                 
                 //Определяем, на какой по какой ссылке находится наше слово
@@ -59,7 +52,7 @@ namespace deckgen
                 }
                 else
                 {
-                    reportStream.Write("Failure. Page not found. Link: " + word_ + ".\n");
+                    reportStream.Write("Failure. Page not found. Link: " + word + ".\n");
                 }
 
                 //Всё нужное получили, начинаем обрабатывать searchCrossreferenceLinkList

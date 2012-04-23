@@ -6,31 +6,42 @@ using HtmlAgilityPack;
 
 namespace deckgen
 {
-    partial class Oald8
+    partial class Oald8 : Parser
     {
-        void ParsePage(ref CardsStream stream, HtmlDocument document, string word, string labels)
+        string PrintList(List<string> list)
+        {
+            string ret = "";
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                ret += list[i].Trim();
+                if (i + 1 < list.Count) ret += " → ";
+            }
+
+            ret = ret.Replace("    ", " ").Replace("  ", " ");
+
+            return ret;
+        }
+
+        void ParsePage(ref CardsStream stream, HtmlDocument document, string link, string labels)
         {
             var examples = document.DocumentNode.SelectNodes("//span[@class='x-g']");
-            var link = word;
-
+   
             if (examples == null)
             {
                 reportStream.Write("Failure. Examples was not found. Link: " + link + ".\n");
                 return;
             }
 
-            HtmlNode definition;
-
             //Transcription
-            var usaTranscriptionNode = document.DocumentNode.SelectSingleNode("//span[@class='y']");
-            var usaTranscription = (usaTranscriptionNode != null) ? usaTranscriptionNode.InnerText : "";
-            var gbrTranscriptionNode = document.DocumentNode.SelectSingleNode("//span[@class='i']");
-            var gbrTranscription = (gbrTranscriptionNode != null) ? gbrTranscriptionNode.InnerText : "";
+            var usaTranscription = document.DocumentNode.SelectSingleNode("//span[@class='y']");
+            var gbrTranscription = document.DocumentNode.SelectSingleNode("//span[@class='i']");
 
-            var title_ = document.DocumentNode.SelectSingleNode("//h2[@class='h']");
-            var title = (title_ != null) ? title_.InnerText : "";
+            //Word "name"
+            var word = getText(document.DocumentNode.SelectSingleNode("//h2[@class='h']"));
 
-            var wordLabel = title.Replace(' ', '-');
+            //Label
+            var wordLabel = word.Replace(' ', '-');
             labels = (labels == "") ? "oald8 " + wordLabel : "oald8 " + wordLabel + " " + labels;
 
             foreach (HtmlNode example in examples)
@@ -43,104 +54,85 @@ namespace deckgen
                 if (GetName(parentNode) == "pv-g")
                 {
                     var structure2 = parentNode.SelectSingleNode("h4[@class='pv']");
-                    if (structure2 != null) card.structure.Add(structure2.InnerText);
-                    if (structure1 != null) card.structure.Add(structure1.InnerText);
+                    if (structure2 != null) card.Structure.Add(structure2.InnerText);
+                    if (structure1 != null) card.Structure.Add(structure1.InnerText);
                 }
                 else if (GetName(parentNode) == "n-g" && GetName(parentNode.ParentNode) == "pv-g")
                 {
                     var structure2 = parentNode.SelectSingleNode("span[@class='vs-g']");
                     var structure3 = parentNode.ParentNode.SelectSingleNode("h4[@class='pv']");
-                    if (structure3 != null) card.structure.Add(structure3.InnerText);
-                    if (structure2 != null) card.structure.Add(structure2.InnerText);
-                    if (structure1 != null) card.structure.Add(structure1.InnerText);
+                    if (structure3 != null) card.Structure.Add(structure3.InnerText);
+                    if (structure2 != null) card.Structure.Add(structure2.InnerText);
+                    if (structure1 != null) card.Structure.Add(structure1.InnerText);
                 }
                 else if (GetName(parentNode) == "n-g")
                 {
                     var structure2 = parentNode.SelectSingleNode("span[@class='cf']");
-                    if (structure2 != null) card.structure.Add(structure2.InnerText);
-                    if (structure1 != null) card.structure.Add(structure1.InnerText);
+                    if (structure2 != null) card.Structure.Add(structure2.InnerText);
+                    if (structure1 != null) card.Structure.Add(structure1.InnerText);
                 }
                 else if (GetName(parentNode) == "id-g")
                 {
                     var structure2 = parentNode.SelectSingleNode("h4[@class='id']");
-                    if (structure2 != null) card.structure.Add(structure2.InnerText);
-                    if (structure1 != null) card.structure.Add(structure1.InnerText);
+                    if (structure2 != null) card.Structure.Add(structure2.InnerText);
+                    if (structure1 != null) card.Structure.Add(structure1.InnerText);
                 }
                 else if (GetName(parentNode) == "h-g")
                 {
                     var structure2 = parentNode.SelectSingleNode("span[@class='cf']");
-                    if (structure2 != null) card.structure.Add(structure2.InnerText);
-                    if (structure1 != null) card.structure.Add(structure1.InnerText);
+                    if (structure2 != null) card.Structure.Add(structure2.InnerText);
+                    if (structure1 != null) card.Structure.Add(structure1.InnerText);
                 }
 
                 //Getting a definition
+                HtmlNode definition = null;
+
                 if (GetName(parentNode) == "id-g" || GetName(parentNode) == "h-g")
                 {
-                    var temp = parentNode.SelectSingleNode("div[@class='def_block']");
-
-                    if (temp == null)
-                    {
-                        temp = parentNode.SelectSingleNode("span[@class='ud']");
-                        if (temp == null)
-                        {
-                            definition = parentNode.SelectSingleNode("span[@class='d']");
-                        }
-                        else
-                        {
-                            definition = temp;
-                        }
-                    }
-                    else
-                    {
-                        definition = temp.SelectSingleNode("span[@class='ud']");
-                        if (definition == null)
-                        {
-                            definition = temp.SelectSingleNode("span[@class='d']");
-                        }
-                    }
+                    definition = parentNode.SelectSingleNode("div[@class='def_block']");
                 }
-                else
+                if (definition == null)
                 {
-                    definition = parentNode.SelectSingleNode("span[@class='ud']");
-                    if (definition == null)
-                    {
-                        definition = parentNode.SelectSingleNode("span[@class='d']");
-                    }
+                    definition = parentNode;
+                }
+
+                var temp = definition.SelectSingleNode("span[@class='ud']");
+                if (temp == null)
+                {
+                    definition = definition.SelectSingleNode("span[@class='d']");
+                }
+                else {
+                    definition = temp;
                 }
 
                 //An example itself
-                var interpretation = example.SelectSingleNode("span[@class='x']");
-                card.interpretation = (interpretation != null) ? interpretation.InnerText : "";
-                card.sentence = (new Regex(" \\(=.*?\\)")).Replace(card.interpretation, "");
+                card.Interpretation = getText(example.SelectSingleNode("span[@class='x']"));
+                card.Sentence = (new Regex(" \\(=.*?\\)")).Replace(card.Interpretation, "");
 
-                card.definition = (definition != null) ? definition.InnerText : "";
-                card.definition = card.definition.Replace("    ", " ");
+                card.Definition = getText(definition);
+                card.Definition = card.Definition.Replace("    ", " ");
 
-                card.usaTranscription = usaTranscription;
-                card.gbrTranscription = gbrTranscription;
-                
-                if (card.interpretation == card.sentence)
+                card.UsaTranscription = getText(usaTranscription);
+                card.GbrTranscription = getText(gbrTranscription);
+
+                if (card.Interpretation == card.Sentence)
                 {
-                    card.interpretation = "";
+                    card.Interpretation = "";
                 }
-                if (card.definition == "")
+                if (card.Definition == "")
                 {
-                    reportStream.Write("Failure. Definition was not found. Link: " + link + ". Example: '" + card.sentence + "'.\n");
+                    reportStream.Write("Failure. Definition was not found. Link: " + link + ". Example: '" + card.Sentence + "'.\n");
                 }
-                if (card.sentence == "")
+                if (card.Sentence == "")
                 {
                     reportStream.Write("Failure. Example was not found. Link: " + link + ".\n");
                 }
 
-                //"Trimming"
-                title = title.Trim();
-                card.sentence = card.sentence.Trim();
-                card.interpretation = card.interpretation.Trim();
-                card.gbrTranscription = card.gbrTranscription.Trim();
-                card.usaTranscription = card.usaTranscription.Trim();
-                card.definition = card.definition.Trim();
-
-                var outStr = card.sentence + "\t" + card.interpretation + "\t" + title + "\t" + card.gbrTranscription + "\t" + card.usaTranscription + "\t" + PrintList(card.structure) + "\t" + card.definition + "\t" + labels + "\n";
+                var outStr = card.Sentence + "\t" + card.Interpretation +
+                    "\t" + word + "\t" + card.GbrTranscription +
+                    "\t" + card.UsaTranscription + "\t" +
+                    PrintList(card.Structure) + "\t" + card.Definition +
+                    "\t" + labels + "\n";
                 stream.Write(outStr);
                 count++;
             }
