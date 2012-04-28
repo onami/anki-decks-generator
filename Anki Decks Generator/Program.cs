@@ -12,17 +12,19 @@ namespace deckgen
         {
             None = 0,
             Oald8 = 1,
-            Macmillan = 2
+            Macmillan = 2,
+            VocabularyCom = 4
         }
 
         public static void Main(string[] args)
         {
             ParserMask useParser = ParserMask.None;
             var inputPath = "";
-            var outputPath = DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt";
+            var outputPath = String.Empty;
             var wordlist = new List<String>();
             var labels = "";
             var relatedFlag = false;
+            var vocabularyComExamplesLimit = Int32.MaxValue;
 
             CardsStream output;
             StreamReader input;
@@ -31,22 +33,37 @@ namespace deckgen
             {
                 if (args[i] == "-oald8")
                 {
+                    outputPath = "oald8";
                     useParser |= ParserMask.Oald8;
                 }
                 else if (args[i] == "-macmillan")
                 {
+                    outputPath = "macmillan";
                     useParser |= ParserMask.Macmillan;
                 }
+                else if (args[i] == "-vocabcom")
+                {
+                    outputPath = "vocabulary.com";
+                    useParser |= ParserMask.VocabularyCom;
+                }
+
                 else if (args[i] == "-l" && i + 1 < args.Length)
                 {
                     labels = (args[i + 1]).Trim();
                     i++;
                 }
+                else if (args[i] == "-vlimit" && i + 1 < args.Length)
+                {
+                    vocabularyComExamplesLimit = Convert.ToInt32((args[i + 1]).Trim());
+                    i++;
+                }
+
                 else if (args[i] == "-p" && i + 1 < args.Length)
                 {
                     inputPath = (args[i + 1]).Trim();
                     i++;
                 }
+
                 else if (args[i] == "-related")
                 {
                     relatedFlag = true;
@@ -84,14 +101,17 @@ namespace deckgen
                 }
             }
 
+
             if (labels.Length != 0)
             {
-                outputPath = "./" + labels + " " + outputPath;
+                outputPath = "./" + outputPath + " " + labels;
             }
             else
             {
-                outputPath = "./deck " + outputPath;
+                outputPath = "./" + outputPath;
             }
+
+            outputPath += " " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt";
 
             output = new CardsStream(outputPath, 100000);
 
@@ -101,10 +121,16 @@ namespace deckgen
                 parser.ProcessWordlist(ref output, wordlist, labels, relatedFlag);
                 Console.WriteLine("\nCount: {0}\n", parser.count);
             }
-            if ((useParser & ParserMask.Macmillan) != ParserMask.None)
+            else if ((useParser & ParserMask.Macmillan) != ParserMask.None)
             {
                 var parser = new Macmillan();
                 parser.ProcessWordlist(ref output, wordlist, labels, relatedFlag);
+                Console.WriteLine("\nCount: {0}\n", parser.count);
+            }
+            else if ((useParser & ParserMask.VocabularyCom) != ParserMask.None)
+            {
+                var parser = new VocabularyCom();
+                parser.ProcessWordlist(ref output, wordlist, labels, vocabularyComExamplesLimit);
                 Console.WriteLine("\nCount: {0}\n", parser.count);
             }
 
@@ -112,6 +138,7 @@ namespace deckgen
             {
                 output.Save();
             }
+
            //Console.ReadKey();
         }
     }

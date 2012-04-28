@@ -12,7 +12,7 @@ namespace deckgen
         public int count = 0;
         Hashtable pages = new Hashtable();
         string searchPath = "http://oald8.oxfordlearnersdictionaries.com/dictionary/";
-        CardsStream reportStream = new CardsStream("./report oald8 " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
+        CardsStream reportStream = new CardsStream("./_report oald8 " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
         string getCleanUrl(HtmlNode link)
         {
@@ -52,7 +52,7 @@ namespace deckgen
                 }
                 else
                 {
-                    reportStream.Write("Failure. Page not found. Link: " + word + ".\n");
+                    reportStream.Write("Failure. Page not found. Link: " + word + "\n");
                 }
 
                 //Всё нужное получили, начинаем обрабатывать searchCrossreferenceLinkList
@@ -83,7 +83,7 @@ namespace deckgen
                     {
                         Console.WriteLine("{0}", link);
                         updatedWordList.Add(link, true);
-                        reportStream.Write("Success. Page was parsed. Link: " + link + ".\n");
+                        reportStream.Write("Success. Page was parsed. Link: " + link + "\n");
                     }
                 }
 

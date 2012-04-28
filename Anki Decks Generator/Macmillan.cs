@@ -12,7 +12,7 @@ namespace deckgen
         public int count;
         Hashtable pages;
         string searchPath = "http://www.macmillandictionary.com/dictionary/british/";
-        CardsStream reportStream = new CardsStream("./report macmillan" + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
+        CardsStream reportStream = new CardsStream("./_report macmillan" + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
         public Macmillan()
         {
@@ -40,7 +40,7 @@ namespace deckgen
 
                 ParsePage(ref stream, page, word, labels);
                 Console.WriteLine("{0}", word);
-                reportStream.Write("Success. Page was parsed. Link: " + word + ".\n");
+                reportStream.Write("Success. Page was parsed. Link: " + word + "\n");
 
                 //Берём все слова из блока search results
                 var linksNodes = page.DocumentNode.SelectNodes("//div[@class='entrylist']/ul/li/a");
@@ -74,7 +74,7 @@ namespace deckgen
 
                         Console.WriteLine("{0}", link);
                         updatedWordList.Add(link, true);
-                        reportStream.Write("Success. Page was parsed. Link: " + link + ".\n");
+                        reportStream.Write("Success. Page was parsed. Link: " + link + "\n");
                     }
                 }
 

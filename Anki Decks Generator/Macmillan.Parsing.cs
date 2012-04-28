@@ -8,13 +8,13 @@ namespace deckgen
 {
     public partial class Macmillan : Parser
     {
-        void ParsePage(ref CardsStream stream, HtmlDocument document, string link, string labels)
+        void ParsePage(ref CardsStream stream, HtmlDocument document, string link, string userLabels)
         {
             var examples = document.DocumentNode.SelectNodes("//div[@class='EXAMPLES']");
 
             if (examples == null)
             {
-                reportStream.Write("Failure. Examples was not found. Link: " + link + ".\n");
+                reportStream.Write("Failure. Examples was not found. Link: " + link + "\n");
                 return;
             }
 
@@ -22,7 +22,7 @@ namespace deckgen
             var word = getText(document.DocumentNode.SelectSingleNode("//span[@class='BASE']"));
 
             var wordLabel = word.Replace(' ', '-');
-            labels = (labels == "") ? "macmillan " + wordLabel : "macmillan " + wordLabel + " " + labels;
+            userLabels = (userLabels == "") ? "macmillan " + wordLabel : "macmillan " + wordLabel + " " + userLabels;
 
             foreach (HtmlNode example in examples)
             {
@@ -45,18 +45,18 @@ namespace deckgen
 
                 if (card.Definition == "")
                 {
-                    reportStream.Write("Failure. Definition was not found. Link: " + link + ". Example: '" + card.Sentence + "'.\n");
+                    reportStream.Write("Failure. Definition was not found. Link: " + link + " Example: '" + card.Sentence + "'\n");
                 }
                 if (card.Sentence == "")
                 {
-                    reportStream.Write("Failure. Example was not found. Link: " + link + ".\n");
+                    reportStream.Write("Failure. Example was not found. Link: " + link + "\n");
                 }
 
                 var outStr = card.Sentence + "\t" + card.Interpretation +
                    "\t" + word + "\t" + card.GbrTranscription +
                    "\t" + card.UsaTranscription + "\t" +
                    card.SimpleStructure + "\t" + card.Definition +
-                   "\t" + labels + "\n";
+                   "\t" + userLabels + "\n";
                 stream.Write(outStr);
                 count++;
             }

@@ -23,13 +23,13 @@ namespace deckgen
             return ret;
         }
 
-        void ParsePage(ref CardsStream stream, HtmlDocument document, string link, string labels)
+        void ParsePage(ref CardsStream stream, HtmlDocument document, string link, string userLabels)
         {
             var examples = document.DocumentNode.SelectNodes("//span[@class='x-g']");
    
             if (examples == null)
             {
-                reportStream.Write("Failure. Examples was not found. Link: " + link + ".\n");
+                reportStream.Write("Failure. Examples was not found. Link: " + link + "\n");
                 return;
             }
 
@@ -42,7 +42,7 @@ namespace deckgen
 
             //Label
             var wordLabel = word.Replace(' ', '-');
-            labels = (labels == "") ? "oald8 " + wordLabel : "oald8 " + wordLabel + " " + labels;
+            userLabels = (userLabels == "") ? "oald8 " + wordLabel : "oald8 " + wordLabel + " " + userLabels;
 
             foreach (HtmlNode example in examples)
             {
@@ -121,18 +121,18 @@ namespace deckgen
                 }
                 if (card.Definition == "")
                 {
-                    reportStream.Write("Failure. Definition was not found. Link: " + link + ". Example: '" + card.Sentence + "'.\n");
+                    reportStream.Write("Failure. Definition was not found. Link: " + link + " Example: '" + card.Sentence + "'\n");
                 }
                 if (card.Sentence == "")
                 {
-                    reportStream.Write("Failure. Example was not found. Link: " + link + ".\n");
+                    reportStream.Write("Failure. Example was not found. Link: " + link + "\n");
                 }
 
                 var outStr = card.Sentence + "\t" + card.Interpretation +
                     "\t" + word + "\t" + card.GbrTranscription +
                     "\t" + card.UsaTranscription + "\t" +
                     PrintList(card.Structure) + "\t" + card.Definition +
-                    "\t" + labels + "\n";
+                    "\t" + userLabels + "\n";
                 stream.Write(outStr);
                 count++;
             }

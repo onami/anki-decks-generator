@@ -1,3 +1,4 @@
-deckgen -p auxiliary_parts_of_speech1 -oald8
-deckgen -p auxiliary_parts_of_speech1 -macmillan
+deckgen -p test -vocabcom -vlimit 450 -l "test shemt"
+deckgen -p test -oald8 "test shemt"
+deckgen -p test -macmillan "test shemt"
 pause
