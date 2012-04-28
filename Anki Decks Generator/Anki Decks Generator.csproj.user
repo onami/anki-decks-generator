@@ -4,7 +4,7 @@
     <StartArguments>-p test.txt -l "test"</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <StartArguments>-p 1_10 -vocabcom -vlimit 48</StartArguments>
+    <StartArguments>-p test -vocabcom -vlimit 1</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <PublishUrlHistory>publish\</PublishUrlHistory>
