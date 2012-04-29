@@ -93,10 +93,10 @@ namespace deckgen
                         break;
                     }
 
-                    
+                    try
                     {
                         var json_ = System.Text.UTF8Encoding.ASCII.GetString(client.DownloadData(examplesPath + word + "&maxResults=" + step + "&startOffset=" + offset + "&filter=0"));
-                        
+
                         json_ = (new Regex(@"\$d\((.*?)\)")).Replace(json_, @"""$1""");
                         var json = JObject.Parse(json_);
 
@@ -140,7 +140,10 @@ namespace deckgen
                             stream.Write((new Regex("[\t\n\r]").Replace(example.ToString(), "")).Replace("%%!!%%", "\t") + "\n");
                         }
                     }
-
+                    catch
+                    {
+                        continue;
+                    }
                 }
                 while (step > 0);
 
