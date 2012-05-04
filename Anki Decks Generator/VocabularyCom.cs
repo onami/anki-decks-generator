@@ -26,7 +26,7 @@ namespace deckgen
             return str.Trim();
         }
 
-        public void ProcessWordlist(ref CardsStream stream, List<string> wordlist, string userLabels, int limit)
+        public void ProcessWordlist(ref CardsStream stream, List<string> wordlist, string userLabels, string domain, int limit)
         {
             var step_ = (limit < 48) ? limit : 48;
             userLabels = "vocabulary_com " + userLabels;
@@ -95,7 +95,7 @@ namespace deckgen
 
                     try
                     {
-                        var json_ = System.Text.UTF8Encoding.ASCII.GetString(client.DownloadData(examplesPath + word + "&maxResults=" + step + "&startOffset=" + offset + "&filter=0"));
+                        var json_ = System.Text.UTF8Encoding.ASCII.GetString(client.DownloadData(examplesPath + word + "&maxResults=" + step + "&startOffset=" + offset + "&filter=0&domain=" + domain));
 
                         json_ = (new Regex(@"\$d\((.*?)\)")).Replace(json_, @"""$1""");
                         var json = JObject.Parse(json_);

@@ -25,6 +25,7 @@ namespace deckgen
             var labels = "";
             var relatedFlag = false;
             var vocabularyComExamplesLimit = Int32.MaxValue;
+            var vocabularyComDomain = String.Empty;
 
             CardsStream output;
             StreamReader input;
@@ -46,7 +47,7 @@ namespace deckgen
                     outputPath = "vocabulary.com";
                     useParser |= ParserMask.VocabularyCom;
                 }
-
+                    
                 else if (args[i] == "-l" && i + 1 < args.Length)
                 {
                     labels = (args[i + 1]).Trim();
@@ -55,6 +56,12 @@ namespace deckgen
                 else if (args[i] == "-vlimit" && i + 1 < args.Length)
                 {
                     vocabularyComExamplesLimit = Convert.ToInt32((args[i + 1]).Trim());
+                    i++;
+                }
+
+                else if (args[i] == "-vdomain" && i + 1 < args.Length)
+                {
+                    vocabularyComDomain = (args[i + 1]).Trim();
                     i++;
                 }
 
@@ -130,7 +137,7 @@ namespace deckgen
             else if ((useParser & ParserMask.VocabularyCom) != ParserMask.None)
             {
                 var parser = new VocabularyCom();
-                parser.ProcessWordlist(ref output, wordlist, labels, vocabularyComExamplesLimit);
+                parser.ProcessWordlist(ref output, wordlist, labels, vocabularyComDomain, vocabularyComExamplesLimit);
                 Console.WriteLine("\nCount: {0}\n", parser.count);
             }
 
