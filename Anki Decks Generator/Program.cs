@@ -13,7 +13,8 @@ namespace deckgen
             None = 0,
             Oald8 = 1,
             Macmillan = 2,
-            VocabularyCom = 4
+            VocabularyCom = 4,
+            LingvoRu = 8
         }
 
         public static void Main(string[] args)
@@ -24,7 +25,7 @@ namespace deckgen
             var wordlist = new List<String>();
             var labels = "";
             var relatedFlag = false;
-            var vocabularyComExamplesLimit = Int32.MaxValue;
+            var examplesLimit = Int32.MaxValue;
             var vocabularyComDomain = String.Empty;
 
             CardsStream output;
@@ -47,15 +48,20 @@ namespace deckgen
                     outputPath = "vocabulary.com";
                     useParser |= ParserMask.VocabularyCom;
                 }
+                else if (args[i] == "-lingvo")
+                {
+                    outputPath = "lingvo";
+                    useParser |= ParserMask.LingvoRu;
+                }
                     
                 else if (args[i] == "-l" && i + 1 < args.Length)
                 {
                     labels = (args[i + 1]).Trim();
                     i++;
                 }
-                else if (args[i] == "-vlimit" && i + 1 < args.Length)
+                else if (args[i] == "-limit" && i + 1 < args.Length)
                 {
-                    vocabularyComExamplesLimit = Convert.ToInt32((args[i + 1]).Trim());
+                    examplesLimit = Convert.ToInt32((args[i + 1]).Trim());
                     i++;
                 }
 
@@ -137,7 +143,13 @@ namespace deckgen
             else if ((useParser & ParserMask.VocabularyCom) != ParserMask.None)
             {
                 var parser = new VocabularyCom();
-                parser.ProcessWordlist(ref output, wordlist, labels, vocabularyComDomain, vocabularyComExamplesLimit);
+                parser.ProcessWordlist(ref output, wordlist, labels, vocabularyComDomain, examplesLimit);
+                Console.WriteLine("\nCount: {0}\n", parser.count);
+            }
+            else if ((useParser & ParserMask.LingvoRu) != ParserMask.None)
+            {
+                var parser = new LingvoRu();
+                parser.ProcessWordlist(ref output, wordlist, labels, examplesLimit);
                 Console.WriteLine("\nCount: {0}\n", parser.count);
             }
 
@@ -145,8 +157,6 @@ namespace deckgen
             {
                 output.Save();
             }
-
-           //Console.ReadKey();
         }
     }
 }

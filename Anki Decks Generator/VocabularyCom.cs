@@ -11,7 +11,6 @@ namespace deckgen
 {
     class VocabularyCom : Parser
     {
-        public int count;
         WebClient client = new WebClient();
         Hashtable pages = new Hashtable();
         string examplesPath = "http://corpus.vocabulary.com/examples.json?query=";
@@ -119,7 +118,7 @@ namespace deckgen
 
                         foreach (var _ in json.SelectToken("result.sentences"))
                         {
-                            count++;
+                            count_++;
                             var example = new StringBuilder()
                                 .Append(SafeTrim((string)_.SelectToken("sentence")))
                                 .Append("%%!!%%")
@@ -150,7 +149,7 @@ namespace deckgen
                 Console.WriteLine("Processed: {0}\n", offset);
 
             }
-            reportStream.Write("Total: " + count + "\n");
+            reportStream.Write("Total: " + count_ + "\n");
             reportStream.Save();
         }
     }

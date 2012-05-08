@@ -8,15 +8,15 @@ namespace deckgen
 {
     public partial class Macmillan
     {
-        //Сделать только геттер
-        public int count;
+
+        
         Hashtable pages;
         string searchPath = "http://www.macmillandictionary.com/dictionary/british/";
         CardsStream reportStream = new CardsStream("./_report macmillan" + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
         public Macmillan()
         {
-            count = 0;
+            count_ = 0;
             pages = new Hashtable();
         }
 
@@ -83,7 +83,7 @@ namespace deckgen
                     crossreferenceLinks[update.Key] = update.Value;
                 }
             }
-            reportStream.Write("Total: " + count + "\n");
+            reportStream.Write("Total: " + count_ + "\n");
             reportStream.Save();
         }
     }

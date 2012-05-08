@@ -8,8 +8,6 @@ namespace deckgen
 {
     public partial class Oald8
     {
-        //Сделать только геттер
-        public int count = 0;
         Hashtable pages = new Hashtable();
         string searchPath = "http://oald8.oxfordlearnersdictionaries.com/dictionary/";
         CardsStream reportStream = new CardsStream("./_report oald8 " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
@@ -92,7 +90,7 @@ namespace deckgen
                     crossreferenceLinks[update.Key] = update.Value;
                 }
             }
-            reportStream.Write("Total: " + count + "\n");
+            reportStream.Write("Total: " + count_ + "\n");
             reportStream.Save();
         } 
     }

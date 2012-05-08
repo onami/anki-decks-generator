@@ -69,6 +69,7 @@
   <ItemGroup>
     <Compile Include="Card.cs" />
     <Compile Include="CardsStream.cs" />
+    <Compile Include="LingvoRu.cs" />
     <Compile Include="Macmillan.cs" />
     <Compile Include="Macmillan.Parsing.cs" />
     <Compile Include="Oald8.Parsing.cs" />

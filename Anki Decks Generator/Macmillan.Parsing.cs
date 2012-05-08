@@ -58,7 +58,7 @@ namespace deckgen
                    card.SimpleStructure + "\t" + card.Definition +
                    "\t" + userLabels + "\n";
                 stream.Write(outStr);
-                count++;
+                count_++;
             }
         }
     }
