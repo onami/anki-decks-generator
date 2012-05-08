@@ -108,7 +108,7 @@ namespace deckgen
 
                             if (hits == 0)
                             {
-                                reportStream.Write("Failure. Examples was not found. Word:" + word + "\n");
+                                reportStream.Write("Failure. Examples was not found. Word: " + word + "\n");
                             }
                         }
 

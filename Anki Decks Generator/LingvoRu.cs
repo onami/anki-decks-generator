@@ -10,7 +10,7 @@ namespace deckgen
     class LingvoRu : Parser
     {
         string examplesPath = "http://lingvopro.abbyyonline.com/ru/Search/ExamplesPage?section=Public&srcLang=en&destLang=ru&caseSensitive=False&startIndex=";
-        CardsStream reportStream = new CardsStream("./_report lingvo " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
+        CardsStream reportStream = new CardsStream("./_report lingvo.ru " + DateTime.Now.ToString("yyyy.MM.dd HH-mm-ss") + ".txt", 10000);
 
         string DownloadExamples(string word, int interval)
         {
@@ -44,15 +44,20 @@ namespace deckgen
             foreach (var word in wordlist)
             {
                 var offset = 0;
+
+                reportStream.Write("Success. Page was parsed. Word: " + word + "\n");
+                Console.WriteLine("{0}", word);
+
                 while (offset < limit)
                 {
                     
                     var page = new HtmlDocument();
                     page.LoadHtml(DownloadExamples(word, offset));
-                    reportStream.Write("Success. Page was parsed. Link: " + word + "\n");
+
                     var examples = page.DocumentNode.SelectNodes("//tr[@class='item first']");
                     if (examples == null)
                     {
+                        reportStream.Write("Failure. Examples was not found. Word: " + word + "\n");
                         break;
                     }
 
@@ -73,6 +78,7 @@ namespace deckgen
             }
 
             reportStream.Write("Total: " + count_ + "\n");
+            reportStream.Save();
             return;
         }
     }
