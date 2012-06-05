@@ -31,7 +31,7 @@ namespace deckgen
             {
                 var en = getInnerHtml(example.SelectSingleNode("td[@class='left']/p/span"));
                 var ru = getInnerHtml(example.SelectSingleNode("td[@class='right']/p/span"));
-                result += en + "\t" + ru + "\t" + labels + "\n";
+                result += en + "\t" + en + "\t" + ru + "\t" + labels + "\n";
             }
 
             return result;
